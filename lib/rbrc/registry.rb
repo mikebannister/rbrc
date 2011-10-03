@@ -1,9 +1,9 @@
 module Rbrc
   class Registry
     class << self
-      def register_config(name)
+      def register_config(name, options={})
         @configs ||= {}
-        @configs[name] = Config.new(name)
+        @configs[name] = Config.new(name, options)
       end
 
       def [](name)

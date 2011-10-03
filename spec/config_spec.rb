@@ -2,6 +2,8 @@ require 'spec_helper'
 
 module Rbrc
   describe Config do
+    let(:root_path) { File.expand_path('../files', __FILE__) }
+
     context "fake fs" do
       before(:each) do
         # Note: FakeFS activated globally in spec_helper
@@ -33,7 +35,7 @@ module Rbrc
     describe "#values" do
       it "should return values from the config file" do
         FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+        Config.any_instance.stubs(:file_path).returns("#{root_path}/foorc")
 
         config = Config.new(:foo)
         expected_values = {
@@ -47,7 +49,7 @@ module Rbrc
     describe "#[]" do
       it "should return for specified config key" do
         FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+        Config.any_instance.stubs(:file_path).returns("#{root_path}/foorc")
 
         Registry.register_config :foo
 
@@ -59,7 +61,7 @@ module Rbrc
     describe "#method_missing" do
       it "should serve up each config as an named attribute" do
         FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+        Config.any_instance.stubs(:file_path).returns("#{root_path}/foorc")
 
         Config.foo.moof.should eq 'doof'
         Config.foo.foof.should eq 'toof'
@@ -69,7 +71,7 @@ module Rbrc
     describe "self#method_missing" do
       it "should serve up each config as an named attribute" do
         FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+        Config.any_instance.stubs(:file_path).returns("#{root_path}/foorc")
 
         Config.foo.should be_a Config
         Config.foo.should be_a Config
@@ -79,7 +81,7 @@ module Rbrc
     describe "self#register" do
       it "should expose a shortcut to Registry.register_config" do
         FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+        Config.any_instance.stubs(:file_path).returns("#{root_path}/foorc")
 
         Config.register(:foo)
         Registry[:foo].should be_a Config

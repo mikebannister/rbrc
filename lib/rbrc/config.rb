@@ -3,9 +3,9 @@ require 'parseconfig'
 
 module Rbrc
   class Config
-    def initialize(name)
+    def initialize(name, options={})
       @name = name
-      raise ConfigFileDoesNotExistError unless File.exist?(file_path)
+      ensure_file_exists
     end
 
     def file_path
@@ -20,14 +20,18 @@ module Rbrc
       values[key.to_s]
     end
 
+    def ensure_file_exists
+      raise ConfigFileDoesNotExistError unless File.exist?(file_path)
+    end
+
     def method_missing(sym, *args, &block)
       return self[sym]
     end
 
     class << self
 
-      def register(config)
-        Rbrc::Registry.register_config(config)
+      def register(config, options={})
+        Rbrc::Registry.register_config(config, options)
       end
 
       def method_missing(sym, *args, &block)
