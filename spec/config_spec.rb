@@ -2,38 +2,31 @@ require 'spec_helper'
 
 module Rbrc
   describe Config do
-    before(:each) do
-      # Note: FakeFS activated globally in spec_helper
-      FileUtils.mkdir_p File.expand_path('~')
-      FileUtils.touch File.expand_path('~/.foorc')
-      FileUtils.touch File.expand_path('~/.barrc')
-    end
-
-    describe "#initialize" do
-      it "should throw an error if the file doesn't exist" do
-        FileUtils.rm File.expand_path('~/.foorc')
-
-        lambda {
-          Config.new(:foo)
-        }.should raise_error Rbrc::ConfigFileDoesNotExistError
+    context "fake fs" do
+      before(:each) do
+        # Note: FakeFS activated globally in spec_helper
+        FileUtils.mkdir_p File.expand_path('~')
+        FileUtils.touch File.expand_path('~/.foorc')
+        FileUtils.touch File.expand_path('~/.barrc')
       end
 
-      it "should activate a shortcut class for accessing config values globally" do
-        FakeFS.deactivate!
-        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+      describe "#initialize" do
+        it "should throw an error if the file doesn't exist" do
+          FileUtils.rm File.expand_path('~/.foorc')
 
-        Registry.register_config :foo
-
-        FooConfig.should be_a ShortcutClass.class
+          lambda {
+            Config.new(:foo)
+          }.should raise_error Rbrc::ConfigFileDoesNotExistError
+        end
       end
-    end
 
-    describe "#file_path" do
-      it "should return the path to the config file" do
-        config = Config.new(:foo)
-        relative_path = config.file_path.split('/').last
+      describe "#file_path" do
+        it "should return the path to the config file" do
+          config = Config.new(:foo)
+          relative_path = config.file_path.split('/').last
 
-        relative_path.should eq '.foorc'
+          relative_path.should eq '.foorc'
+        end
       end
     end
 
@@ -58,8 +51,38 @@ module Rbrc
 
         Registry.register_config :foo
 
-        FooConfig.moof.should == 'doof'
-        FooConfig.foof.should == 'toof'
+        Config.foo['moof'].should == 'doof'
+        Config.foo['foof'].should == 'toof'
+      end
+    end
+
+    describe "#method_missing" do
+      it "should serve up each config as an named attribute" do
+        FakeFS.deactivate!
+        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+
+        Config.foo.moof.should eq 'doof'
+        Config.foo.foof.should eq 'toof'
+      end
+    end
+
+    describe "self#method_missing" do
+      it "should serve up each config as an named attribute" do
+        FakeFS.deactivate!
+        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+
+        Config.foo.should be_a Config
+        Config.foo.should be_a Config
+      end
+    end
+
+    describe "self#register" do
+      it "should expose a shortcut to Registry.register_config" do
+        FakeFS.deactivate!
+        Config.any_instance.stubs(:file_path).returns('/Users/mike/work/rbrc/spec/files/foorc')
+
+        Config.register(:foo)
+        Registry[:foo].should be_a Config
       end
     end
   end

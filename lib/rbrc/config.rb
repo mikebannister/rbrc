@@ -6,8 +6,6 @@ module Rbrc
     def initialize(name)
       @name = name
       raise ConfigFileDoesNotExistError unless File.exist?(file_path)
-
-      init_shortcut_class
     end
 
     def file_path
@@ -22,10 +20,22 @@ module Rbrc
       values[key.to_s]
     end
 
-    def init_shortcut_class
-      helper_name = "#{@name.to_s.camelize}Config".to_sym
-      shortcut_class = Class.new(Rbrc::ShortcutClass)
-      Object.const_set(helper_name, shortcut_class)
+    def method_missing(sym, *args, &block)
+      return self[sym]
+    end
+
+    class << self
+
+      def register(config)
+        Rbrc::Registry.register_config(config)
+      end
+
+      def method_missing(sym, *args, &block)
+        return Registry[sym] if Registry[sym]
+
+        super(sym, *args, &block)
+      end
+
     end
   end
 end

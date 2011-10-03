@@ -1,4 +1,3 @@
-require 'rbrc/shortcut_class'
 require 'rbrc/registry'
 require 'rbrc/config'
 
